@@ -1,6 +1,6 @@
 # libSubnetCalculator
 
-Modern C++ 17 library for calculating IPv4 and IPv6 subnetworks. It allows for , , getting 
+Modern C++ 17 library for calculating IPv4 and IPv6 subnetworks.
 
 ## Features:
  - Dividing (Both IPv4 and IPv6) networks into separate same-sized subnetworks (eg. 192.168.0.0/24 to 192.168.0.0/25 and 192.168.0.128/25).
