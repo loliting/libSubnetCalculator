@@ -32,9 +32,11 @@
 #include <arpa/inet.h>
 #endif
 
-typedef __uint128_t uint128;
 
 namespace libSubnetCalculator{
+    /* 128-bit unsigned int type */
+    typedef __uint128_t uint128;
+
     // "Primitive" IPv4 address type
     typedef uint32_t IPv4Addr; 
 
