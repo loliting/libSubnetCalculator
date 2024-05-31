@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-add_library(libSubnetCalculator SHARED libSubnetCalculator.cpp)
+add_library(libSubnetCalculator STATIC libSubnetCalculator.cpp)
 target_include_directories(libSubnetCalculator PRIVATE include)
 set_target_properties(libSubnetCalculator PROPERTIES
     PREFIX ""
