@@ -19,18 +19,23 @@
 
 #include <cmath>
 
+
 using namespace libSubnetCalculator;
 
-IPv4Address::IPv4Address() { }
 
-IPv4Address::IPv4Address(std::string str){
+IPv4Address::IPv4Address()
+{
+
+}
+
+IPv4Address::IPv4Address(std::string str) {
     struct in_addr tmp = { 0 };
     if(inet_pton(AF_INET, str.c_str(), &tmp) < 1)
         throw InvalidAddressException();
     m_decimal = ntohl(tmp.s_addr);
 }
 
-std::string IPv4Address::toString(){
+std::string IPv4Address::toString() {
     size_t tmp_size = INET_ADDRSTRLEN + 1;
     char tmp[tmp_size];
     tmp[INET_ADDRSTRLEN] = '\0';
@@ -39,7 +44,7 @@ std::string IPv4Address::toString(){
     return std::string(tmp);
 }
 
-IPv4Address::Class IPv4Address::getClass(){
+IPv4Address::Class IPv4Address::getClass() {
     if(m_decimal < (IPv4Addr)2147483648U) // 128.0.0.0
         return A;
     if(m_decimal < (IPv4Addr)3221225472U) // 192.0.0.0
@@ -51,25 +56,29 @@ IPv4Address::Class IPv4Address::getClass(){
     return E;
 }
 
-IPv4Address IPv4Address::fromSetBits(uint8_t bits){
+IPv4Address IPv4Address::fromSetBits(uint8_t bits) {
     if(bits > 32)
         throw InvalidAddressException();
-    return IPv4Address((bits < 32) ? ~(~(IPv4Addr)0 >> bits) :  ~(uint32_t)0u);
+    return IPv4Address((bits < 32) ? ~(~(IPv4Addr)0 >> bits) : ~(uint32_t)0u);
 }
 
-IPv6Address::IPv6Address(){ }
+IPv6Address::IPv6Address()
+{
+    
+}
 
-IPv6Address::IPv6Address(std::string str){
+IPv6Address::IPv6Address(std::string str) {
     IPv6Addr tmp = { 0 };
     if(inet_pton(AF_INET6, str.c_str(), &tmp) < 1)
         throw InvalidAddressException();
+
     m_address.dWords[0] = ntohl(tmp.dWords[3]);
     m_address.dWords[1] = ntohl(tmp.dWords[2]);
     m_address.dWords[2] = ntohl(tmp.dWords[1]);
     m_address.dWords[3] = ntohl(tmp.dWords[0]);
 }
 
-std::string IPv6Address::toString(){
+std::string IPv6Address::toString() {
     size_t tmp_size = INET6_ADDRSTRLEN + 1;
     char tmp[tmp_size];
     tmp[INET6_ADDRSTRLEN] = '\0';
@@ -82,17 +91,17 @@ std::string IPv6Address::toString(){
     return std::string(tmp);
 }
 
-void IPv4Network::recalculate(){
+void IPv4Network::recalculate() {
     if(m_CIDR > 32)
         throw InvalidCIDRException();
     
     m_maskAddress = IPv4Address::fromSetBits(m_CIDR);
-    if(m_CIDR <= 30){
+    if(m_CIDR <= 30) {
         m_hostCount = ~m_maskAddress.decimal() - 1;
         m_networkAddress.m_decimal = m_initAddress.decimal() & m_maskAddress.decimal();
         m_broadcastAddress.m_decimal = m_networkAddress.decimal() + ~m_maskAddress.decimal();
     }
-    else{
+    else {
         m_hostCount = (m_CIDR == 31) ? 2 : 1;
         m_broadcastAddress = 0;
         m_networkAddress = 0;
@@ -106,7 +115,7 @@ IPv4Network::IPv4Network(IPv4Address ip, uint8_t CIDR) : m_initAddress(ip) {
     recalculate();
 }
 
-std::vector<IPv4Network> IPv4Network::getSubnets(uint32_t subnetCount){
+std::vector<IPv4Network> IPv4Network::getSubnets(uint32_t subnetCount) {
     if(subnetCount == 1)
         return std::vector<IPv4Network>(1, *this);
     if(m_CIDR > 32)
@@ -126,7 +135,7 @@ std::vector<IPv4Network> IPv4Network::getSubnets(uint32_t subnetCount){
 
     std::vector<IPv4Network> ans(subnetCount);
 
-    for(int i = 0; i < subnetCount; ++i){
+    for(int i = 0; i < subnetCount; ++i) {
         ans[i].m_CIDR = cidr;
         ans[i].m_maskAddress = subnetMask;
         ans[i].m_hostCount = hostCount;
@@ -137,17 +146,17 @@ std::vector<IPv4Network> IPv4Network::getSubnets(uint32_t subnetCount){
     return ans;
 }
 
-IPv4Address IPv4Network::host(uint32_t index){
+IPv4Address IPv4Network::host(uint32_t index) {
     if(index >= this->hostCount())
         throw InvalidAddressException();
     if(CIDR() <= 30)
         return IPv4Address(networkAddress().decimal() + index + 1);
     if(CIDR() == 31)
-        return m_initAddress.decimal() & subnetMask().decimal() + index;
+        return (m_initAddress.decimal() & subnetMask().decimal()) + index;
     return m_initAddress;
 }
 
-IPv6Network::IPv6Network(IPv6Address ip, uint8_t CIDR){
+IPv6Network::IPv6Network(IPv6Address ip, uint8_t CIDR) {
     if(CIDR > 128)
         throw InvalidCIDRException();
     m_CIDR = CIDR;
@@ -155,24 +164,24 @@ IPv6Network::IPv6Network(IPv6Address ip, uint8_t CIDR){
     recalculate();
 }
 
-void IPv6Network::recalculate(){
+void IPv6Network::recalculate() {
     if(m_CIDR > 128)
         throw InvalidCIDRException();
 
-    if(CIDR() == 128){
+    if(CIDR() == 128) {
         m_hostCount = 1;
         m_prefix.m_address.addr = 0u;
     }
-    else{
+    else {
         m_hostCount = CIDR() == 0 ? ~(uint128)0U : (~(uint128)0 >> CIDR());
         m_prefix.m_address.addr = m_initAddress.m_address.addr & ~m_hostCount;
     }    
 }
 
-std::string libSubnetCalculator::uint128toStdString(uint128 value){
+std::string libSubnetCalculator::uint128toStdString(uint128 value) {
     char buffer[128] = { 0 };
     char* d = std::end(buffer) - 1;
-    do{
+    do {
         --d;
         *d = '0' + (value % 10);
         value /= 10;
@@ -180,7 +189,7 @@ std::string libSubnetCalculator::uint128toStdString(uint128 value){
     return std::string(d);
 }
 
-std::vector<IPv6Network> IPv6Network::getSubnets(uint64_t subnetCount){
+std::vector<IPv6Network> IPv6Network::getSubnets(uint64_t subnetCount) {
     if(subnetCount == 1)
         return std::vector<IPv6Network>(1, *this);
     if(m_CIDR > 128)
@@ -199,7 +208,7 @@ std::vector<IPv6Network> IPv6Network::getSubnets(uint64_t subnetCount){
 
     std::vector<IPv6Network> ans(subnetCount);
 
-    for(int i = 0; i < subnetCount; ++i){
+    for(int i = 0; i < subnetCount; ++i) {
         ans[i].m_CIDR = cidr;
         ans[i].m_hostCount = hostCount;
         ans[i].m_prefix.m_address.addr = m_prefix.m_address.addr + (ipCount * (uint128)i);
@@ -207,13 +216,12 @@ std::vector<IPv6Network> IPv6Network::getSubnets(uint64_t subnetCount){
     }
     return ans;
 }
+
 IPv6Address IPv6Network::host(uint128 index){
     if(index >= this->hostCount())
         throw InvalidAddressException();
-    if(CIDR() <= 126)
+    if(CIDR() <= 127)
         return IPv6Address(m_prefix.m_address.addr + index + 1);
-    if(CIDR() == 127)
-        return m_prefix.m_address.addr + index + 1;
     return m_initAddress;
 }
 
