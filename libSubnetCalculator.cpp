@@ -59,7 +59,9 @@ IPv4Address::Class IPv4Address::getClass() {
 IPv4Address IPv4Address::fromSetBits(uint8_t bits) {
     if(bits > 32)
         throw InvalidAddressException();
-    return IPv4Address((bits < 32) ? ~(~(IPv4Addr)0 >> bits) : ~(uint32_t)0u);
+    if(bits == 32)
+        return IPv4Address(~(uint32_t)0u);
+    return IPv4Address(~(~(IPv4Addr)0 >> bits));
 }
 
 IPv6Address::IPv6Address()
